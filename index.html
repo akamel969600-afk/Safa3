@@ -841,18 +841,12 @@
       </div>
     </div>
 
-    <div class="card anim-in" style="margin-bottom:22px;"><div class="grid-2">
-      <div class="card anim-in">
-        <div class="section-title">Sales progress last week</div>
-        <div id="sales-stage-details-week" style="display:flex;flex-direction:column;gap:14px;">
-          <div style="font-size:11px;color:var(--text-muted);">Weekly detail is shown from the Sales_Stage_Details sheet in the Excel file.</div>
-        </div>
+    <div class="card anim-in" style="margin-bottom:22px;">
+      <div class="section-title">Sales progress last week</div>
+      <div id="sales-stage-details-week" style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:11px;color:var(--text-muted);">Weekly detail is shown from the Sales_Stage_Details sheet in the Excel file.</div>
       </div>
-      </div><span class="pipeline-val">Awaiting detail feed</span></div>
-          <div class="pipeline-item"><span class="pipeline-name">Active Proposal</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:0%"></div></div><span class="pipeline-val">Live</span></div>
-          <div class="pipeline-item"><span class="pipeline-name">Submitted</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:0%"></div></div><span class="pipeline-val">Live</span></div>
-          <div class="pipeline-item"><span class="pipeline-name">Won</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:0%"></div></div><span class="pipeline-val">Live</span></div>
-        </div>
+    </div>
 
     <!-- ─── SUBMITTED PROPOSALS TABLE ─── -->
     <div class="card" style="margin-bottom:22px;">
@@ -1486,15 +1480,19 @@ function renderSalesKPIs(kpiRows) {
     setText('funnel-leads-value', formatCurrency(parseNumeric(leads['Value_SAR']) || 0));
   }
 
-  const spActiveCount = derived.activeWeek.length || 0;
+  let spActiveCount = derived.activeAll.length;
+  try { if(_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B7']){ spActiveCount = parseNumeric(_wb.Sheets['Sales_Performance']['B7'].v) || _wb.Sheets['Sales_Performance']['B7'].v; } } catch(e){}
   setText('sales-kpi-active-count', spActiveCount);
-  setHTML('sales-kpi-active-value', formatAbbrevCurrency(activeWeekValue || 0));
+  const _wb = (typeof wb!=='undefined'?wb:(typeof workbook!=='undefined'?workbook:null));
+  let spVal = activeTotalValue;
+  try { if(_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B7']){ spVal = _wb.Sheets['Sales_Performance']['B7'].v; } } catch(e){}
+  setHTML('sales-kpi-active-value', formatAbbrevCurrency(spVal));
   setText('sales-kpi-active-month-count', derived.activeMonth.length);
   setText('sales-kpi-active-month-note', derived.activeMonth.length ? summarizeNames(derived.activeMonth, 'Client') : '—');
   setText('sales-kpi-active-week-count', derived.activeWeek.length);
   setText('sales-kpi-active-week-note', derived.activeWeek.length ? `SAR ${activeWeekValue.toLocaleString()}` : (activeMonthValue ? `SAR ${activeMonthValue.toLocaleString()}` : '—'));
-  setText('funnel-active-count', spActiveCount);
-  setText('funnel-active-value', formatCurrency(activeWeekValue || 0));
+  setText('funnel-active-count', derived.activeAll.length);
+  setText('funnel-active-value', formatCurrency(activeTotalValue));
 
   setText('sales-kpi-submitted-count', derived.submittedAll.length);
   setHTML('sales-kpi-submitted-value', formatAbbrevCurrency(submittedTotalValue));
@@ -1849,19 +1847,5 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const financialTab = document.getElementById('tab-financial');
-  if (!financialTab) return;
-  financialTab.querySelectorAll('.card').forEach(card => {
-    const titleEl = card.querySelector('.section-title');
-    const title = (titleEl?.textContent || '').trim().toLowerCase();
-    if (title === 'opportunities register' || title === 'operations readiness') {
-      card.remove();
-    }
-  });
-});
-</script>
 </body>
 </html>
