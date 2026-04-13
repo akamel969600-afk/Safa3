@@ -1492,7 +1492,10 @@ function renderSalesKPIs(kpiRows) {
   }
 
   setText('sales-kpi-active-count', derived.activeAll.length);
-  setHTML('sales-kpi-active-value', formatAbbrevCurrency(activeTotalValue));
+  const _wb = (typeof wb!=='undefined'?wb:(typeof workbook!=='undefined'?workbook:null));
+  let spVal = activeTotalValue;
+  try { if(_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B7']){ spVal = _wb.Sheets['Sales_Performance']['B7'].v; } } catch(e){}
+  setHTML('sales-kpi-active-value', formatAbbrevCurrency(spVal));
   setText('sales-kpi-active-month-count', derived.activeMonth.length);
   setText('sales-kpi-active-month-note', derived.activeMonth.length ? summarizeNames(derived.activeMonth, 'Client') : '—');
   setText('sales-kpi-active-week-count', derived.activeWeek.length);
