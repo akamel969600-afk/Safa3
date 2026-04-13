@@ -1261,7 +1261,14 @@ function renderSalesStageBreakdowns() {
   const d = getSalesDerivedData();
   renderStageBreakdownCard('sales-stage-details-month', [
     {title:'Leads', items:d.leadMonth},
-    {title:'Active Proposal', items:d.activeMonth.map(r => ({Client:r.Client, Opportunity:r.Notes || 'Active pipeline item', Value_SAR:r['Proposal Value (SAR)'] || 0}))},
+    {
+  title:'Active Proposal',
+  items: d.activeMonth.map(r => ({
+    Client: r.Client,
+    Opportunity: r.Notes || 'Active pipeline item',
+    Value_SAR: Number(r['Proposal Value (SAR)']) || 0
+  }))
+},
     {title:'Submitted', items:d.submittedMonth},
     {title:'Won', items:d.wonMonth}
   ]);
