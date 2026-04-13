@@ -1480,12 +1480,21 @@ function renderSalesKPIs(kpiRows) {
     setText('funnel-leads-value', formatCurrency(parseNumeric(leads['Value_SAR']) || 0));
   }
 
-  let spActiveCount = derived.activeAll.length;
-  try { if(_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B7']){ spActiveCount = parseNumeric(_wb.Sheets['Sales_Performance']['B7'].v) || _wb.Sheets['Sales_Performance']['B7'].v; } } catch(e){}
-  setText('sales-kpi-active-count', spActiveCount);
   const _wb = (typeof wb!=='undefined'?wb:(typeof workbook!=='undefined'?workbook:null));
+  let spActiveCount = derived.activeAll.length;
+  try {
+    if (_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B6']) {
+      spActiveCount = parseNumeric(_wb.Sheets['Sales_Performance']['B6'].v) ?? _wb.Sheets['Sales_Performance']['B6'].v;
+    }
+  } catch(e) {}
+  setText('sales-kpi-active-count', spActiveCount);
+
   let spVal = activeTotalValue;
-  try { if(_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B7']){ spVal = _wb.Sheets['Sales_Performance']['B7'].v; } } catch(e){}
+  try {
+    if (_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['C6']) {
+      spVal = parseNumeric(_wb.Sheets['Sales_Performance']['C6'].v) ?? _wb.Sheets['Sales_Performance']['C6'].v;
+    }
+  } catch(e) {}
   setHTML('sales-kpi-active-value', formatAbbrevCurrency(spVal));
   setText('sales-kpi-active-month-count', derived.activeMonth.length);
   setText('sales-kpi-active-month-note', derived.activeMonth.length ? summarizeNames(derived.activeMonth, 'Client') : '—');
