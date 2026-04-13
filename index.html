@@ -1480,18 +1480,20 @@ function renderSalesKPIs(kpiRows) {
     setText('funnel-leads-value', formatCurrency(parseNumeric(leads['Value_SAR']) || 0));
   }
 
+  const activeRow = byName['active proposals'];
   const _wb = (typeof wb!=='undefined'?wb:(typeof workbook!=='undefined'?workbook:null));
-  let spActiveCount = derived.activeAll.length;
+
+  let spActiveCount = activeRow ? safeNumber(activeRow['Count'], 0) : derived.activeAll.length;
   try {
-    if (_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B6']) {
+    if ((!activeRow || activeRow['Count'] == null) && _wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['B6']) {
       spActiveCount = parseNumeric(_wb.Sheets['Sales_Performance']['B6'].v) ?? _wb.Sheets['Sales_Performance']['B6'].v;
     }
   } catch(e) {}
   setText('sales-kpi-active-count', spActiveCount);
 
-  let spVal = activeTotalValue;
+  let spVal = activeRow ? (parseNumeric(activeRow['Value_SAR']) ?? activeRow['Value_SAR']) : activeTotalValue;
   try {
-    if (_wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['C6']) {
+    if ((!activeRow || activeRow['Value_SAR'] == null) && _wb && _wb.Sheets && _wb.Sheets['Sales_Performance'] && _wb.Sheets['Sales_Performance']['C6']) {
       spVal = parseNumeric(_wb.Sheets['Sales_Performance']['C6'].v) ?? _wb.Sheets['Sales_Performance']['C6'].v;
     }
   } catch(e) {}
