@@ -425,6 +425,40 @@
     background: linear-gradient(90deg, var(--palm), var(--sand));
   }
 
+
+
+  /* ═══════════════ SALES KPI INTERACTIVE TOOLTIP ═══════════════ */
+  .sales-kpi-card { overflow: visible; cursor: pointer; }
+  .sales-kpi-card:hover,
+  .sales-kpi-card.is-active { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: var(--border-active); }
+  .sales-kpi-card::after {
+    content: 'View details'; position: absolute; right: 14px; top: 12px;
+    font-size: 8px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--text-muted); opacity: 0; transition: opacity 0.25s ease;
+  }
+  .sales-kpi-card:hover::after, .sales-kpi-card.is-active::after { opacity: 1; }
+  .sales-kpi-tooltip {
+    display: none; position: absolute; left: 12px; right: 12px; top: calc(100% + 10px);
+    z-index: 20; padding: 14px; border-radius: 12px; background: var(--bg-card);
+    border: 1px solid var(--border-active); box-shadow: var(--shadow-hover);
+    max-height: 280px; overflow: auto; animation: tooltipFade 0.22s ease;
+  }
+  .sales-kpi-card:hover .sales-kpi-tooltip,
+  .sales-kpi-card.is-active .sales-kpi-tooltip { display: block; }
+  @keyframes tooltipFade { from{opacity:0;transform:translateY(-5px);} to{opacity:1;transform:translateY(0);} }
+  .sales-kpi-tooltip-title {
+    font-size: 10px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--palm); margin-bottom: 8px;
+  }
+  .sales-kpi-tooltip-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--table-border);
+  }
+  .sales-kpi-tooltip-row:last-child { border-bottom: none; }
+  .sales-kpi-tooltip-client { font-size: 12px; font-weight: 800; color: var(--text-primary); }
+  .sales-kpi-tooltip-opp { font-size: 10px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+  .sales-kpi-tooltip-value { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--sand); white-space: nowrap; }
+
   /* ═══════════════ SCROLLBAR ═══════════════ */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
@@ -661,6 +695,10 @@
         </ul>
       </div>
     </div>
+
+    <div class="card" id="strategy-operations-readiness" style="margin-bottom:22px;min-height:90px;">
+      <div class="section-title">Operations Readiness</div>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════
@@ -795,35 +833,28 @@
       <div class="card anim-in">
         <div class="section-title">Sales Funnel</div>
         <div style="width:100%;display:flex;justify-content:center;padding:6px 0;">
-          <svg viewBox="0 0 620 280" style="max-width:580px;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
-            <!-- Stage 1: Leads -->
-            <polygon points="10,8 610,8 565,62 55,62" style="fill:var(--sand-dim);stroke:var(--sand);stroke-width:1.5;" rx="4"/>
-            <text x="170" y="30" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--sand);letter-spacing:1.5px;">LEADS</text>
-            <text x="170" y="50" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;fill:var(--text-primary);" id="funnel-leads-count">9</text>
-            <text x="450" y="42" id="funnel-leads-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--sand);">SAR 3,700,000</text>
+          <svg viewBox="0 0 620 230" style="max-width:580px;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
+            <!-- Stage 1: Active Proposals -->
+            <polygon points="40,12 580,12 520,76 100,76" style="fill:var(--palm-dim);stroke:var(--palm);stroke-width:1.5;"/>
+            <text x="220" y="38" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--palm);letter-spacing:1.5px;">ACTIVE PROPOSALS</text>
+            <text x="220" y="62" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-active-count">4</text>
+            <text x="455" y="52" id="funnel-active-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--palm);">SAR 2,100,000</text>
 
-            <!-- Stage 2: Active Proposals -->
-            <polygon points="55,70 565,70 500,124 120,124" style="fill:var(--palm-dim);stroke:var(--palm);stroke-width:1.5;"/>
-            <text x="200" y="92" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--palm);letter-spacing:1.5px;">ACTIVE PROPOSALS</text>
-            <text x="200" y="114" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;fill:var(--text-primary);" id="funnel-active-count">4</text>
-            <text x="430" y="104" id="funnel-active-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--palm);">SAR 2,100,000</text>
+            <!-- Stage 2: Submitted -->
+            <polygon points="100,88 520,88 440,152 180,152" style="fill:var(--green-dim);stroke:var(--green);stroke-width:1.5;"/>
+            <text x="270" y="114" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--green);letter-spacing:1.5px;">SUBMITTED</text>
+            <text x="270" y="138" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-submitted-count">19</text>
+            <text x="440" y="128" id="funnel-submitted-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--green);">SAR 3,475,000</text>
 
-            <!-- Stage 3: Submitted -->
-            <polygon points="120,132 500,132 420,186 200,186" style="fill:var(--green-dim);stroke:var(--green);stroke-width:1.5;"/>
-            <text x="260" y="154" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--green);letter-spacing:1.5px;">SUBMITTED</text>
-            <text x="260" y="176" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;fill:var(--text-primary);" id="funnel-submitted-count">19</text>
-            <text x="420" y="166" id="funnel-submitted-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--green);">SAR 3,475,000</text>
-
-            <!-- Stage 4: Won -->
-            <polygon points="200,194 420,194 370,248 250,248" style="fill:var(--red-dim);stroke:var(--red);stroke-width:1.5;"/>
-            <text x="310" y="216" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--red);letter-spacing:1.5px;">WON</text>
-            <text x="310" y="238" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;fill:var(--text-primary);">0</text>
+            <!-- Stage 3: Won -->
+            <polygon points="180,164 440,164 378,218 242,218" style="fill:var(--red-dim);stroke:var(--red);stroke-width:1.5;"/>
+            <text x="310" y="186" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--red);letter-spacing:1.5px;">WON</text>
+            <text x="310" y="208" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-won-count">0</text>
 
             <!-- Conversion labels -->
-            <text x="590" y="42" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">100%</text>
-            <text x="550" y="104" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">44%</text>
-            <text x="490" y="166" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">—</text>
-            <text x="430" y="238" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--red);">0%</text>
+            <text x="565" y="52" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">Pipeline</text>
+            <text x="505" y="128" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">Submitted</text>
+            <text x="430" y="208" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--red);">Won</text>
           </svg>
         </div>
       </div>
@@ -832,13 +863,6 @@
         <div class="chart-box tall"><canvas id="chartProbDist"></canvas></div>
       </div>
     </div>
-
-    <!-- ─── TOP CLIENTS ─── -->
-    <div class="card anim-in" style="margin-bottom:22px;">
-      <div class="section-title">Top Clients by Proposal Value</div>
-      <div id="sales-top-clients">
-      <div class="pipeline-item"><span class="pipeline-name">Tadawul Group</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:100%"></div></div><span class="pipeline-val">1.59M</span></div>
-      </div>
     </div>
 
     <div class="card anim-in" style="margin-bottom:22px;">
@@ -860,29 +884,6 @@
         </table>
       </div>
     </div>
-
-    <!-- ─── OPERATIONS UPDATE ─── -->
-    <div class="card">
-      <div class="section-title">Operations Readiness</div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Operation Item</th><th>Status</th><th>Progress</th></tr></thead>
-          <tbody id="sales-operations-body">
-            <tr><td>Bank Account Activation</td><td class="pos">Completed</td><td class="pos">100%</td></tr>
-            <tr><td>National Address</td><td class="pos">Completed</td><td class="pos">100%</td></tr>
-            <tr><td>External Audit</td><td>In Process</td><td>50%</td></tr>
-            <tr><td>Website</td><td>In Process</td><td>50%</td></tr>
-            <tr><td>Advisory Committee</td><td>In Process</td><td>50%</td></tr>
-            <tr><td>Governance Policies</td><td>In Process</td><td>40%</td></tr>
-            <tr><td>Recruitment</td><td>In Process</td><td>30%</td></tr>
-            <tr><td>ZATCA</td><td style="color:var(--amber)!important">Pending</td><td>30%</td></tr>
-            <tr><td>Mentorship Platform</td><td>In Process</td><td>30%</td></tr>
-            <tr><td>Commercial Registration</td><td style="color:var(--amber)!important">Pending</td><td>20%</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 
 </div>
@@ -1105,7 +1106,6 @@ function refreshAllVisuals() {
   if (typeof renderSalesKPIs === 'function') renderSalesKPIs(dashboardData.sales.kpiRows || []);
   if (typeof renderSalesStageBreakdowns === 'function') renderSalesStageBreakdowns();
   if (typeof renderSalesTables === 'function') renderSalesTables(dashboardData.sales.opportunities || [], dashboardData.sales.operations || []);
-  if (typeof renderTopClients === 'function') renderTopClients(dashboardData.sales.opportunities || []);
   destroyAllCharts();
   setTimeout(initChartsAll, 60);
 }
@@ -1453,6 +1453,58 @@ function renderTopClients(opportunities) {
     return `<div class="pipeline-item"><span class="pipeline-name">${item.client}</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:${width}%"></div></div><span class="pipeline-val">${label}</span></div>`;
   }).join('');
 }
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+function buildOpportunityTooltip(title, items) {
+  const rows = (items || []).filter(Boolean);
+  const body = rows.length ? rows.slice(0, 12).map(item => {
+    const value = safeNumber(item.Value_SAR ?? item['Value_SAR'] ?? item['Proposal Value (SAR)'] ?? item.value, 0);
+    const client = item.Client || item.client || '—';
+    const opportunity = item.Opportunity || item.opportunity || item.Notes || item.note || item.Stage || '—';
+    const owner = item.Owner || item['BD Lead'] || item.owner || '';
+    return `<div class="sales-kpi-tooltip-row">
+      <div>
+        <div class="sales-kpi-tooltip-client">${escapeHtml(client)}</div>
+        <div class="sales-kpi-tooltip-opp">${escapeHtml(opportunity)}${owner ? ' · ' + escapeHtml(owner) : ''}</div>
+      </div>
+      <div class="sales-kpi-tooltip-value">${value ? 'SAR ' + value.toLocaleString() : '—'}</div>
+    </div>`;
+  }).join('') : '<div style="font-size:11px;color:var(--text-muted);">No detailed opportunities available for this KPI.</div>';
+  return `<div class="sales-kpi-tooltip-title">${escapeHtml(title)} · ${rows.length} record${rows.length === 1 ? '' : 's'}</div>${body}`;
+}
+function attachSalesKpiTooltips() {
+  const d = getSalesDerivedData();
+  const configs = [
+    {id:'sales-kpi-leads-count', title:'Leads Last Week', items:d.leadWeek},
+    {id:'sales-kpi-active-count', title:'Active Proposals Last Week', items:d.activeWeek.length ? d.activeWeek : d.activeAll},
+    {id:'sales-kpi-submitted-count', title:'Submitted Last Week', items:d.submittedWeek.length ? d.submittedWeek : d.submittedAll},
+    {id:'sales-kpi-won-count', title:'Won Opportunities', items:d.wonWeek.length ? d.wonWeek : d.wonAll},
+    {id:'sales-kpi-lost-count', title:'Lost Opportunities', items:d.lostWeek.length ? d.lostWeek : d.lostAll}
+  ];
+  configs.forEach(cfg => {
+    const metricEl = document.getElementById(cfg.id);
+    const card = metricEl ? metricEl.closest('.card') : null;
+    if (!card) return;
+    card.classList.add('sales-kpi-card');
+    card.setAttribute('tabindex', '0');
+    let tip = card.querySelector('.sales-kpi-tooltip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.className = 'sales-kpi-tooltip';
+      card.appendChild(tip);
+      card.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        document.querySelectorAll('.sales-kpi-card.is-active').forEach(c => { if (c !== card) c.classList.remove('is-active'); });
+        card.classList.toggle('is-active');
+      });
+    }
+    tip.innerHTML = buildOpportunityTooltip(cfg.title, cfg.items);
+  });
+}
+document.addEventListener('click', () => document.querySelectorAll('.sales-kpi-card.is-active').forEach(c => c.classList.remove('is-active')));
+
 function renderSalesKPIs(kpiRows) {
   dashboardData.sales.kpiRows = kpiRows || [];
   const byName = {};
@@ -1518,6 +1570,7 @@ function renderSalesKPIs(kpiRows) {
   setText('sales-kpi-won-value', formatCurrency(wonTotalValue));
   setText('sales-kpi-won-month-count', derived.wonMonth.length);
   setText('sales-kpi-won-week-count', derived.wonWeek.length);
+  setText('funnel-won-count', derived.wonAll.length);
 
   // Lost KPI card
   const lostTotalValue = aggregateCurrency(derived.lostAll);
@@ -1525,6 +1578,7 @@ function renderSalesKPIs(kpiRows) {
   setText('sales-kpi-lost-value', formatCurrency(lostTotalValue));
   setText('sales-kpi-lost-month-count', derived.lostMonth.length);
   setText('sales-kpi-lost-week-count', derived.lostWeek.length);
+  attachSalesKpiTooltips();
 }
 
 
@@ -1602,7 +1656,6 @@ async function loadAllExcelData(showLoading = false) {
     renderPipeline();
     renderSalesKPIs(metricRows);
     renderSalesTables(dashboardData.sales.opportunities, dashboardData.sales.operations);
-    renderTopClients(dashboardData.sales.opportunities);
     renderSalesStageBreakdowns();
     rebuildAllCharts();
     updateSyncStatus(`Last synced from Excel: ${new Date().toLocaleString()}`, 'success');
