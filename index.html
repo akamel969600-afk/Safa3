@@ -430,34 +430,117 @@
   /* ═══════════════ SALES KPI INTERACTIVE TOOLTIP ═══════════════ */
   .sales-kpi-card { overflow: visible; cursor: pointer; }
   .sales-kpi-card:hover,
-  .sales-kpi-card.is-active { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: var(--border-active); }
+  .sales-kpi-card.is-active {
+    z-index: 50; /* lift the card (and its tooltip) above subsequent cards in DOM order */
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border-active);
+  }
   .sales-kpi-card::after {
-    content: 'View details'; position: absolute; right: 14px; top: 12px;
+    content: 'Click for details'; position: absolute; right: 14px; top: 12px;
     font-size: 8px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase;
     color: var(--text-muted); opacity: 0; transition: opacity 0.25s ease;
+    pointer-events: none;
   }
   .sales-kpi-card:hover::after, .sales-kpi-card.is-active::after { opacity: 1; }
   .sales-kpi-tooltip {
-    display: none; position: absolute; left: 12px; right: 12px; top: calc(100% + 10px);
-    z-index: 20; padding: 14px; border-radius: 12px; background: var(--bg-card);
-    border: 1px solid var(--border-active); box-shadow: var(--shadow-hover);
-    max-height: 280px; overflow: auto; animation: tooltipFade 0.22s ease;
+    display: none; position: absolute;
+    left: 0; min-width: 380px; max-width: 460px;
+    top: calc(100% + 10px);
+    z-index: 1000;
+    padding: 0; border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-active);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    flex-direction: column;
+    animation: tooltipFade 0.22s ease;
   }
+  /* Right-align tooltip on rightmost cards so it never overflows the viewport */
+  .grid-5 > .sales-kpi-card:nth-child(n+4) .sales-kpi-tooltip { left: auto; right: 0; }
   .sales-kpi-card:hover .sales-kpi-tooltip,
-  .sales-kpi-card.is-active .sales-kpi-tooltip { display: block; }
+  .sales-kpi-card.is-active .sales-kpi-tooltip { display: flex; }
   @keyframes tooltipFade { from{opacity:0;transform:translateY(-5px);} to{opacity:1;transform:translateY(0);} }
+
+  .sales-kpi-tooltip-header {
+    padding: 12px 14px 10px;
+    background: linear-gradient(135deg, var(--palm-soft), transparent 80%);
+    border-bottom: 1px solid var(--table-border);
+  }
   .sales-kpi-tooltip-title {
     font-size: 10px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
     color: var(--palm); margin-bottom: 8px;
   }
-  .sales-kpi-tooltip-row {
-    display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 8px 0;
-    border-bottom: 1px solid var(--table-border);
+  .sales-kpi-tooltip-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    padding-top: 4px;
   }
+  .sales-kpi-tooltip-stat { display: flex; flex-direction: column; gap: 2px; }
+  .sales-kpi-tooltip-stat-label {
+    font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .sales-kpi-tooltip-stat-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .sales-kpi-tooltip-list {
+    overflow-y: auto; padding: 4px 14px 12px;
+    max-height: 280px;
+  }
+  .sales-kpi-tooltip-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--table-border);
+    align-items: center;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+  }
+  .sales-kpi-tooltip-row:hover { background: var(--palm-soft); }
   .sales-kpi-tooltip-row:last-child { border-bottom: none; }
   .sales-kpi-tooltip-client { font-size: 12px; font-weight: 800; color: var(--text-primary); }
   .sales-kpi-tooltip-opp { font-size: 10px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
-  .sales-kpi-tooltip-value { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--sand); white-space: nowrap; }
+  .sales-kpi-tooltip-meta {
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+    margin-top: 6px;
+  }
+  .sales-kpi-tooltip-meta-item {
+    font-size: 9px; color: var(--text-muted);
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+  .sales-kpi-tooltip-meta-item strong {
+    font-family: 'JetBrains Mono', monospace; color: var(--text-primary); font-weight: 700;
+  }
+  .sales-kpi-stage-badge {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .sales-kpi-stage-active { background: var(--palm-dim); color: var(--palm); }
+  .sales-kpi-stage-submitted { background: var(--green-dim); color: var(--green); }
+  .sales-kpi-stage-won { background: var(--green-dim); color: var(--green); }
+  .sales-kpi-stage-lost { background: var(--red-dim); color: var(--red); }
+  .sales-kpi-stage-lead { background: var(--amber-dim); color: var(--amber); }
+  .sales-kpi-stage-default { background: var(--table-head-bg); color: var(--text-muted); }
+  .sales-kpi-tooltip-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 800;
+    color: var(--sand); white-space: nowrap; text-align: right;
+  }
+  .sales-kpi-tooltip-prob {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+    color: var(--palm); padding: 1px 6px; border-radius: 8px;
+    background: var(--palm-soft);
+  }
+  .sales-kpi-tooltip-empty {
+    font-size: 11px; color: var(--text-muted); text-align: center;
+    padding: 18px 14px; font-style: italic;
+  }
+  /* Mobile: collapse tooltip to card width */
+  @media(max-width: 768px) {
+    .sales-kpi-tooltip { min-width: 0; max-width: none; left: 0 !important; right: 0 !important; }
+  }
 
   /* ═══════════════ SCROLLBAR ═══════════════ */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -627,75 +710,6 @@
        TAB 3 — STRATEGY & OPERATIONS
        ═══════════════════════════════════════ -->
   <div id="tab-strategy" class="tab-content">
-    <div class="vision-banner">
-      <div class="vision-icon">🌿</div>
-      <div class="vision-text">
-        <h3 id="strategy-mission-title">Operation Motive in Saudi Society</h3>
-        <p id="strategy-mission-content">Supporting community welfare and social development — encouraging volunteerism and community participation. Contributing to national development goals aligned with <strong>Saudi Vision 2030</strong>, promoting transparency and accountability under the National Center for Non-Profit Sector.</p>
-      </div>
-    </div>
-
-    <div class="section-title">Service Pillars</div>
-    <div class="strategy-grid" id="strategy-pillars">
-      <div class="strat-card"><div class="strat-icon">📋</div><div class="strat-title">Advisory Services</div><div class="strat-desc">Strategic advisory for government and non-government sectors — regulatory compliance, public programs, and partnerships</div></div>
-      <div class="strat-card"><div class="strat-icon">🎓</div><div class="strat-title">Training Courses</div><div class="strat-desc">Specialized training programs tailored for institutional and private sector capacity building</div></div>
-      <div class="strat-card"><div class="strat-icon">💡</div><div class="strat-title">Innovation & Technology</div><div class="strat-desc">Scalable, compliant, and innovative technology-driven solutions for social impact</div></div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card">
-        <div class="section-title">Target Sectors</div>
-        <div id="strategy-sectors-wrap" style="margin-bottom:18px;">
-          <div style="font-size:12px;font-weight:700;color:var(--palm);margin-bottom:6px;">Government Sector</div>
-          <ul class="bullet-list">
-            <li>Training, advisory, and innovation support to government institutions</li>
-            <li>Leverage regulatory compliance, public sector programs, and government partnerships</li>
-          </ul>
-        </div>
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--palm);margin-bottom:6px;">Non-Government Sector</div>
-          <ul class="bullet-list">
-            <li>Engage NGOs, private foundations, and social enterprises</li>
-            <li>Tailored programs in advisory, innovation, and technology services</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card">
-        <div class="section-title">Action Plan & Outcomes</div>
-        <div id="strategy-action-wrap" style="margin-bottom:14px;">
-          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Approach</div>
-          <ul class="bullet-list">
-            <li>Map key government agencies and NGOs aligned with mission</li>
-            <li>Develop sector-specific solutions and service packages</li>
-            <li>Strengthen relationships via workshops, consultations, and pilot projects</li>
-          </ul>
-        </div>
-        <div>
-          <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Goals</div>
-          <ul class="bullet-list">
-            <li>Position as a trusted partner for both government and non-government sectors</li>
-            <li>Expand reach, credibility, and impact by year-end</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card" style="text-align:center;">
-        <div class="section-title" style="justify-content:center;">Revenue Mix 2026</div>
-        <div class="chart-box" style="height:210px;"><canvas id="chartRevMix"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="section-title">Value Proposition</div>
-        <ul class="bullet-list" style="padding:6px 0;" id="strategy-value-proposition">
-          <li>Act as a bridge between government initiatives and community/non-profit impact</li>
-          <li>Provide specialized services that are compliant, innovative, and scalable</li>
-          <li>Advisory drives 60% of revenue — high-margin strategic consulting</li>
-          <li>Training at 40% — scalable capacity building with recurring revenue potential</li>
-        </ul>
-      </div>
-    </div>
-
     <div class="card" id="strategy-operations-readiness" style="margin-bottom:22px;min-height:90px;">
       <div class="section-title">Operations Readiness</div>
     </div>
@@ -707,28 +721,12 @@
   <div id="tab-pipeline" class="tab-content">
     <div class="grid-2">
       <div class="card anim-in"><div class="card-accent brand"></div><div class="card-label">Total Revenue Pipeline 2026</div><div class="card-value" id="pipeline-kpi-total">3.05<span class="card-unit">M SAR</span></div></div>
-      <div class="card anim-in"><div class="card-accent sand"></div><div class="card-label">Proposals Q1–Q2 2026</div><div class="card-value" id="pipeline-kpi-q12">2.10<span class="card-unit">M SAR</span></div><div class="card-delta brand" id="pipeline-kpi-active-count-note">8 Active Proposals</div></div>
+      <div class="card anim-in"><div class="card-accent sand"></div><div class="card-label">Proposals Q1–Q2 2026</div><div class="card-value" id="pipeline-kpi-q12">2.10<span class="card-unit">M SAR</span></div><div class="card-delta brand" id="pipeline-kpi-active-count-note">9 Active Proposals</div></div>
     </div>
 
-    <div class="grid-2">
-      <div class="card">
-        <div class="section-title">Active Proposals — 2026</div>
-        <div id="pipeline-active-proposals">
-        <div class="pipeline-item"><span class="pipeline-name">NADEC</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:100%"></div></div><span class="pipeline-val">500,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">MEP</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:100%"></div></div><span class="pipeline-val">500,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">ITQAN ESG</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:70%"></div></div><span class="pipeline-val">350,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">TADAWUL</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:66%"></div></div><span class="pipeline-val">330,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">MDL BEAST</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:44%"></div></div><span class="pipeline-val">220,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">OBEKAN</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:14%"></div></div><span class="pipeline-val">70,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">YAMAMA CEMENT</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:10%"></div></div><span class="pipeline-val">50,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">PIF — CFG</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:9%"></div></div><span class="pipeline-val">45,000</span></div>
-        <div class="pipeline-item"><span class="pipeline-name">Financial Academy</span><div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:6%"></div></div><span class="pipeline-val">30,000</span></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="section-title">Monthly Revenue Ramp 2026</div>
-        <div class="chart-box tall"><canvas id="chartRevRamp"></canvas></div>
-      </div>
+    <div class="card">
+      <div class="section-title">Monthly Revenue Ramp 2026</div>
+      <div class="chart-box tall"><canvas id="chartRevRamp"></canvas></div>
     </div>
 
     <div class="card">
@@ -828,52 +826,110 @@
       </div>
     </div>
 
-    <!-- ─── SALES FUNNEL + PROBABILITY CHART ─── -->
-    <div class="grid-2">
-      <div class="card anim-in">
-        <div class="section-title">Sales Funnel</div>
-        <div style="width:100%;display:flex;justify-content:center;padding:6px 0;">
-          <svg viewBox="0 0 620 230" style="max-width:580px;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
-            <!-- Stage 1: Active Proposals -->
-            <polygon points="40,12 580,12 520,76 100,76" style="fill:var(--palm-dim);stroke:var(--palm);stroke-width:1.5;"/>
-            <text x="220" y="38" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--palm);letter-spacing:1.5px;">ACTIVE PROPOSALS</text>
-            <text x="220" y="62" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-active-count">4</text>
-            <text x="455" y="52" id="funnel-active-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--palm);">SAR 2,100,000</text>
+    <!-- ─── SALES FUNNEL ─── -->
+    <div class="card anim-in" style="margin-bottom:22px;">
+      <div class="section-title">Sales Funnel</div>
+      <div style="width:100%;display:flex;justify-content:center;padding:14px 0 6px;">
+        <svg viewBox="0 0 800 420" style="max-width:780px;width:100%;height:auto;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad-funnel-leads" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#C9A66B;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#A88950;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="grad-funnel-active" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#3B6B35;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#2A5024;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="grad-funnel-submitted" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#5B8A55;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#3F6B3A;stop-opacity:1"/>
+            </linearGradient>
+            <linearGradient id="grad-funnel-won" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#388E3C;stop-opacity:1"/>
+            </linearGradient>
+            <filter id="funnel-shadow" x="-10%" y="-10%" width="120%" height="125%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2.5"/>
+              <feOffset dx="0" dy="3"/>
+              <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+              <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
 
-            <!-- Stage 2: Submitted -->
-            <polygon points="100,88 520,88 440,152 180,152" style="fill:var(--green-dim);stroke:var(--green);stroke-width:1.5;"/>
-            <text x="270" y="114" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--green);letter-spacing:1.5px;">SUBMITTED</text>
-            <text x="270" y="138" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-submitted-count">19</text>
-            <text x="440" y="128" id="funnel-submitted-value" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;fill:var(--green);">SAR 3,475,000</text>
+          <!-- Stage 1: LEADS -->
+          <g class="funnel-stage">
+            <polygon points="40,15 760,15 690,80 110,80" fill="url(#grad-funnel-leads)" filter="url(#funnel-shadow)"/>
+            <text x="400" y="42" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:800;fill:#fff;letter-spacing:2px;">LEADS</text>
+            <text x="400" y="66" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;fill:#fff;" id="funnel-leads-count">9</text>
+            <text x="680" y="58" text-anchor="end" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;fill:#fff;opacity:0.85;" id="funnel-leads-value">SAR 2.1M</text>
+          </g>
 
-            <!-- Stage 3: Won -->
-            <polygon points="180,164 440,164 378,218 242,218" style="fill:var(--red-dim);stroke:var(--red);stroke-width:1.5;"/>
-            <text x="310" y="186" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:800;fill:var(--red);letter-spacing:1.5px;">WON</text>
-            <text x="310" y="208" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;fill:var(--text-primary);" id="funnel-won-count">0</text>
+          <!-- Connector 1: LEADS → ACTIVE -->
+          <line x1="400" y1="83" x2="400" y2="111" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.55"/>
+          <polygon points="394,109 406,109 400,117" fill="var(--text-muted)" opacity="0.6"/>
+          <rect x="450" y="86" width="80" height="22" rx="11" fill="var(--bg-card)" stroke="var(--border-active)" stroke-width="1.5"/>
+          <text x="490" y="102" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;fill:var(--text-primary);" id="funnel-conv-leads-active">→ 56%</text>
 
-            <!-- Conversion labels -->
-            <text x="565" y="52" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">Pipeline</text>
-            <text x="505" y="128" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--text-muted);">Submitted</text>
-            <text x="430" y="208" text-anchor="end" style="font-family:'Nunito Sans',sans-serif;font-size:9px;fill:var(--red);">Won</text>
-          </svg>
+          <!-- Stage 2: ACTIVE PROPOSALS -->
+          <g class="funnel-stage">
+            <polygon points="110,120 690,120 620,185 180,185" fill="url(#grad-funnel-active)" filter="url(#funnel-shadow)"/>
+            <text x="400" y="148" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:800;fill:#fff;letter-spacing:2px;">ACTIVE PROPOSALS</text>
+            <text x="400" y="172" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;fill:#fff;" id="funnel-active-count">5</text>
+            <text x="610" y="164" text-anchor="end" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;fill:#fff;opacity:0.85;" id="funnel-active-value">SAR 1.9M</text>
+          </g>
+
+          <!-- Connector 2: ACTIVE → SUBMITTED -->
+          <line x1="400" y1="188" x2="400" y2="216" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.55"/>
+          <polygon points="394,214 406,214 400,222" fill="var(--text-muted)" opacity="0.6"/>
+          <rect x="450" y="191" width="80" height="22" rx="11" fill="var(--bg-card)" stroke="var(--border-active)" stroke-width="1.5"/>
+          <text x="490" y="207" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;fill:var(--text-primary);" id="funnel-conv-active-submitted">→ 80%</text>
+
+          <!-- Stage 3: SUBMITTED -->
+          <g class="funnel-stage">
+            <polygon points="180,225 620,225 550,290 250,290" fill="url(#grad-funnel-submitted)" filter="url(#funnel-shadow)"/>
+            <text x="400" y="253" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:800;fill:#fff;letter-spacing:2px;">SUBMITTED</text>
+            <text x="400" y="277" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;fill:#fff;" id="funnel-submitted-count">4</text>
+            <text x="540" y="269" text-anchor="end" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;fill:#fff;opacity:0.85;" id="funnel-submitted-value">SAR 195K</text>
+          </g>
+
+          <!-- Connector 3: SUBMITTED → WON -->
+          <line x1="400" y1="293" x2="400" y2="321" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.55"/>
+          <polygon points="394,319 406,319 400,327" fill="var(--text-muted)" opacity="0.6"/>
+          <rect x="450" y="296" width="80" height="22" rx="11" fill="var(--bg-card)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="490" y="312" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;fill:var(--green);" id="funnel-conv-submitted-won">→ 0%</text>
+
+          <!-- Stage 4: WON -->
+          <g class="funnel-stage">
+            <polygon points="250,330 550,330 480,395 320,395" fill="url(#grad-funnel-won)" filter="url(#funnel-shadow)"/>
+            <text x="400" y="358" text-anchor="middle" style="font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:800;fill:#fff;letter-spacing:2px;">WON</text>
+            <text x="400" y="382" text-anchor="middle" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;fill:#fff;" id="funnel-won-count">0</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Summary metrics row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px;padding:14px 4px 4px;border-top:1px solid var(--border);">
+        <div style="text-align:center;padding:6px 4px;">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Win Rate</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--green);" id="funnel-win-rate">—</div>
+        </div>
+        <div style="text-align:center;padding:6px 4px;">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Loss Rate</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--red);" id="funnel-loss-rate">—</div>
+        </div>
+        <div style="text-align:center;padding:6px 4px;">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Avg Deal Size</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--palm);" id="funnel-avg-deal">—</div>
+        </div>
+        <div style="text-align:center;padding:6px 4px;">
+          <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Lost This Year</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--red);" id="funnel-lost-summary">0 · SAR 0</div>
         </div>
       </div>
-      <div class="card anim-in">
-        <div class="section-title">Proposal Win Probability Breakdown</div>
-        <div class="chart-box tall"><canvas id="chartProbDist"></canvas></div>
-      </div>
-    </div>
     </div>
 
+    <!-- ─── OPPORTUNITIES REGISTER ─── -->
     <div class="card anim-in" style="margin-bottom:22px;">
-      <div class="section-title">Sales progress last week</div>
-      <div id="sales-stage-details-week" style="display:flex;flex-direction:column;gap:14px;">
-        <div style="font-size:11px;color:var(--text-muted);">Weekly detail is shown from the Sales_Stage_Details sheet in the Excel file.</div>
-      </div>
-    </div>
-
-    <!-- ─── SUBMITTED PROPOSALS TABLE ─── -->
-    <div class="card" style="margin-bottom:22px;">
       <div class="section-title">Opportunities Register</div>
       <div class="table-wrap">
         <table>
@@ -981,7 +1037,7 @@ const dashboardData = {
     summary: {
       'Total Revenue Pipeline 2026': 3047376,
       'Proposals Q1–Q2 2026': 2100000,
-      'Active Proposals': 8
+      'Active Proposals': 9
     },
     monthlyRamp: [
       {Month:'Jan', 'Advisory Revenue':0, 'Training Revenue':0, 'Total Revenue':0, Quarter:'Q1', Client:'NADEC', 'Proposal Value (SAR)':500000},
@@ -1457,22 +1513,97 @@ function renderTopClients(opportunities) {
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 }
+function formatTooltipDate(value) {
+  if (value === null || value === undefined || value === '') return '';
+  // Excel may give a JS Date, an ISO string, or a number
+  let d = null;
+  if (value instanceof Date) d = value;
+  else if (typeof value === 'number') {
+    // Excel serial date — XLSX.SSF would handle this, but for safety:
+    const epoch = new Date(Date.UTC(1899, 11, 30));
+    d = new Date(epoch.getTime() + value * 86400000);
+  } else {
+    const parsed = new Date(value);
+    if (!isNaN(parsed.getTime())) d = parsed;
+  }
+  if (!d || isNaN(d.getTime())) return String(value);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${String(d.getDate()).padStart(2,'0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+function formatTooltipProb(value) {
+  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'number') {
+    return value <= 1 ? `${Math.round(value * 100)}%` : `${Math.round(value)}%`;
+  }
+  const s = String(value).trim();
+  if (s.endsWith('%')) return s;
+  const n = parseFloat(s);
+  if (isNaN(n)) return s;
+  return n <= 1 ? `${Math.round(n * 100)}%` : `${Math.round(n)}%`;
+}
+function getStageBadgeClass(stage) {
+  const s = String(stage || '').toLowerCase();
+  if (!s || s === '—') return 'sales-kpi-stage-default';
+  if (s.includes('won')) return 'sales-kpi-stage-won';
+  if (s.includes('lost')) return 'sales-kpi-stage-lost';
+  if (s.includes('submit')) return 'sales-kpi-stage-submitted';
+  if (s.includes('active') || s.includes('proposal')) return 'sales-kpi-stage-active';
+  if (s.includes('lead')) return 'sales-kpi-stage-lead';
+  return 'sales-kpi-stage-default';
+}
 function buildOpportunityTooltip(title, items) {
   const rows = (items || []).filter(Boolean);
-  const body = rows.length ? rows.slice(0, 12).map(item => {
-    const value = safeNumber(item.Value_SAR ?? item['Value_SAR'] ?? item['Proposal Value (SAR)'] ?? item.value, 0);
-    const client = item.Client || item.client || '—';
-    const opportunity = item.Opportunity || item.opportunity || item.Notes || item.note || item.Stage || '—';
-    const owner = item.Owner || item['BD Lead'] || item.owner || '';
-    return `<div class="sales-kpi-tooltip-row">
-      <div>
-        <div class="sales-kpi-tooltip-client">${escapeHtml(client)}</div>
-        <div class="sales-kpi-tooltip-opp">${escapeHtml(opportunity)}${owner ? ' · ' + escapeHtml(owner) : ''}</div>
+  const values = rows.map(item => safeNumber(item.Value_SAR ?? item['Value_SAR'] ?? item['Proposal Value (SAR)'] ?? item.value, 0));
+  const total = values.reduce((s, v) => s + v, 0);
+  const avg = rows.length ? total / rows.length : 0;
+  const fmtCurrency = (n) => n ? 'SAR ' + Math.round(n).toLocaleString() : '—';
+
+  const header = `
+    <div class="sales-kpi-tooltip-header">
+      <div class="sales-kpi-tooltip-title">${escapeHtml(title)}</div>
+      <div class="sales-kpi-tooltip-stats">
+        <div class="sales-kpi-tooltip-stat">
+          <div class="sales-kpi-tooltip-stat-label">Records</div>
+          <div class="sales-kpi-tooltip-stat-value">${rows.length}</div>
+        </div>
+        <div class="sales-kpi-tooltip-stat">
+          <div class="sales-kpi-tooltip-stat-label">Total</div>
+          <div class="sales-kpi-tooltip-stat-value">${fmtCurrency(total)}</div>
+        </div>
+        <div class="sales-kpi-tooltip-stat">
+          <div class="sales-kpi-tooltip-stat-label">Average</div>
+          <div class="sales-kpi-tooltip-stat-value">${fmtCurrency(avg)}</div>
+        </div>
       </div>
-      <div class="sales-kpi-tooltip-value">${value ? 'SAR ' + value.toLocaleString() : '—'}</div>
     </div>`;
-  }).join('') : '<div style="font-size:11px;color:var(--text-muted);">No detailed opportunities available for this KPI.</div>';
-  return `<div class="sales-kpi-tooltip-title">${escapeHtml(title)} · ${rows.length} record${rows.length === 1 ? '' : 's'}</div>${body}`;
+
+  const list = rows.length
+    ? `<div class="sales-kpi-tooltip-list">${rows.slice(0, 15).map(item => {
+        const value = safeNumber(item.Value_SAR ?? item['Value_SAR'] ?? item['Proposal Value (SAR)'] ?? item.value, 0);
+        const client = item.Client || item.client || '—';
+        const opportunity = item.Opportunity || item.opportunity || item.Notes || item.note || '—';
+        const owner = item.Owner || item['BD Lead'] || item.owner || '';
+        const stage = item.Stage || item.stage || '';
+        const submitted = formatTooltipDate(item.Submitted ?? item.submitted ?? item.Date ?? item.date);
+        const prob = formatTooltipProb(item.Probability_Pct ?? item.Probability ?? item.probability ?? item['Win Probability'] ?? item['Prob']);
+        const stageClass = getStageBadgeClass(stage);
+        const meta = [];
+        if (owner)     meta.push(`<span class="sales-kpi-tooltip-meta-item">👤 <strong>${escapeHtml(owner)}</strong></span>`);
+        if (submitted) meta.push(`<span class="sales-kpi-tooltip-meta-item">📅 <strong>${escapeHtml(submitted)}</strong></span>`);
+        if (stage)     meta.push(`<span class="sales-kpi-stage-badge ${stageClass}">${escapeHtml(stage)}</span>`);
+        if (prob)      meta.push(`<span class="sales-kpi-tooltip-prob">${escapeHtml(prob)}</span>`);
+        return `<div class="sales-kpi-tooltip-row">
+          <div>
+            <div class="sales-kpi-tooltip-client">${escapeHtml(client)}</div>
+            <div class="sales-kpi-tooltip-opp">${escapeHtml(opportunity)}</div>
+            ${meta.length ? `<div class="sales-kpi-tooltip-meta">${meta.join('')}</div>` : ''}
+          </div>
+          <div class="sales-kpi-tooltip-value">${value ? 'SAR ' + value.toLocaleString() : '—'}</div>
+        </div>`;
+      }).join('')}${rows.length > 15 ? `<div class="sales-kpi-tooltip-empty">+ ${rows.length - 15} more record${rows.length - 15 === 1 ? '' : 's'}</div>` : ''}</div>`
+    : '<div class="sales-kpi-tooltip-empty">No detailed opportunities available for this KPI.</div>';
+
+  return header + list;
 }
 function attachSalesKpiTooltips() {
   const d = getSalesDerivedData();
@@ -1578,7 +1709,62 @@ function renderSalesKPIs(kpiRows) {
   setText('sales-kpi-lost-value', formatCurrency(lostTotalValue));
   setText('sales-kpi-lost-month-count', derived.lostMonth.length);
   setText('sales-kpi-lost-week-count', derived.lostWeek.length);
+  renderSalesFunnel();
   attachSalesKpiTooltips();
+}
+
+function formatAbbrevPlain(value) {
+  const n = safeNumber(value, 0);
+  if (Math.abs(n) >= 1000000) {
+    return (n / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+  }
+  if (Math.abs(n) >= 1000) return Math.round(n / 1000) + 'K';
+  return n.toLocaleString();
+}
+
+function renderSalesFunnel() {
+  // Single source of truth: Sales_Raw_Opportunities. All counts and values are
+  // derived here so the funnel never disagrees with the KPI strip above.
+  const opps = dashboardData.sales.opportunities || [];
+  const stageEqual = (s, target) => normalizeMetricName(s) === normalizeMetricName(target);
+  const sumValue = (arr) => arr.reduce((s, o) => s + safeNumber(o.Value_SAR, 0), 0);
+
+  const totalCount = opps.length;
+  const totalValue = sumValue(opps);
+  const active    = opps.filter(o => stageEqual(o.Stage, 'Active Proposal'));
+  const submitted = opps.filter(o => stageEqual(o.Stage, 'Submitted'));
+  const won       = opps.filter(o => stageEqual(o.Stage, 'Won'));
+  const lost      = opps.filter(o => stageEqual(o.Stage, 'Lost'));
+
+  // Counts and values per stage
+  setText('funnel-leads-count', totalCount);
+  setText('funnel-leads-value', `SAR ${formatAbbrevPlain(totalValue)}`);
+  setText('funnel-active-count', active.length);
+  setText('funnel-active-value', `SAR ${formatAbbrevPlain(sumValue(active))}`);
+  setText('funnel-submitted-count', submitted.length);
+  setText('funnel-submitted-value', `SAR ${formatAbbrevPlain(sumValue(submitted))}`);
+  setText('funnel-won-count', won.length);
+
+  // Conversion rates between stages
+  const conv = (num, denom) => denom > 0 ? Math.round(num / denom * 100) : null;
+  const c1 = conv(active.length, totalCount);
+  const c2 = conv(submitted.length, active.length);
+  const c3 = conv(won.length, submitted.length);
+  setText('funnel-conv-leads-active',     c1 === null ? '—' : `→ ${c1}%`);
+  setText('funnel-conv-active-submitted', c2 === null ? '—' : `→ ${c2}%`);
+  setText('funnel-conv-submitted-won',    c3 === null ? '—' : `→ ${c3}%`);
+
+  // Summary metrics
+  const closed = won.length + lost.length;
+  const winRate  = closed > 0 ? Math.round(won.length  / closed * 100) : null;
+  const lossRate = closed > 0 ? Math.round(lost.length / closed * 100) : null;
+  const avgDeal  = totalCount > 0 ? totalValue / totalCount : 0;
+  const lostValue = sumValue(lost);
+
+  setText('funnel-win-rate',  winRate  === null ? '—' : `${winRate}%`);
+  setText('funnel-loss-rate', lossRate === null ? '—' : `${lossRate}%`);
+  setText('funnel-avg-deal',  totalCount > 0 ? `SAR ${formatAbbrevPlain(avgDeal)}` : '—');
+  setText('funnel-lost-summary', `${lost.length} · SAR ${formatAbbrevPlain(lostValue)}`);
 }
 
 
