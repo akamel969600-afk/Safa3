@@ -590,7 +590,7 @@
         </div>
       </button>
       <div class="header-meta">
-        <div class="header-period">REPORT DATE: 26 APR 2026</div>
+        <div class="header-period">REPORT DATE: 12 MAY 2026</div>
         <div class="header-badge"><span class="dot"></span> Vision 2030 Aligned</div>
         <div id="sheet-sync-status" class="sheet-status">Excel data connection ready</div>
       </div>
@@ -712,6 +712,12 @@
   <div id="tab-strategy" class="tab-content">
     <div class="card" id="strategy-operations-readiness" style="margin-bottom:22px;min-height:90px;">
       <div class="section-title">Operations Readiness</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Operation Item</th><th>Status</th><th>Progress</th></tr></thead>
+          <tbody id="strategy-operations-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1405,6 +1411,27 @@ function renderStrategy() {
 
   const vp = document.getElementById('strategy-value-proposition');
   if (vp) vp.innerHTML = dashboardData.strategy.valueProposition.map(x => `<li>${x}</li>`).join('');
+
+  // Operations Readiness — sourced from Sales_Raw_Operations sheet
+  const opsBody = document.getElementById('strategy-operations-body');
+  if (opsBody) {
+    const ops = (dashboardData.sales && dashboardData.sales.operations) || [];
+    if (ops.length) {
+      opsBody.innerHTML = ops.map(o => {
+        const sClass = (typeof statusClass === 'function') ? statusClass(o['Status']) : '';
+        const pClass = (typeof progressClass === 'function') ? progressClass(o['Progress_Pct']) : '';
+        const raw = Number(o['Progress_Pct'] || 0);
+        const pct = raw <= 1 ? raw * 100 : raw;
+        return `<tr>
+          <td>${o['Operation Item'] ?? ''}</td>
+          <td class="${sClass}">${o['Status'] ?? ''}</td>
+          <td class="${pClass}">${Math.round(pct)}%</td>
+        </tr>`;
+      }).join('');
+    } else {
+      opsBody.innerHTML = `<tr><td colspan="3" style="text-align:center;opacity:.6;">Loading operations data…</td></tr>`;
+    }
+  }
 }
 
 function renderPipeline() {
@@ -1787,7 +1814,7 @@ async function loadAllExcelData(showLoading = false) {
     const strategyValue = readSheetRows(wb, 'Strategy_Operations', 'A26:B30');
     const pipelineSummary = readSheetRows(wb, 'Pipeline_Revenue', 'A4:C7');
     const pipelineRamp = readSheetRows(wb, 'Pipeline_Revenue', 'A10:I23');
-    const pipelineCollections = readSheetRows(wb, 'Pipeline_Revenue', 'A26:F29');
+    const pipelineCollections = readSheetRows(wb, 'Pipeline_Revenue', 'A26:F32');
     const salesPerformanceRows = readSheetRows(wb, 'Sales_Performance', 'A4:I26');
     const opportunityRows = readSheetRows(wb, 'Sales_Raw_Opportunities', 'A3:I1000');
     const operationRows = readSheetRows(wb, 'Sales_Raw_Operations', 'A3:C1000');
@@ -1816,12 +1843,20 @@ async function loadAllExcelData(showLoading = false) {
 
     dashboardData.pipeline.summary = Object.fromEntries(pipelineSummary.filter(r => r['Metric']).map(r => [r['Metric'], parseNumeric(r['Value']) ?? r['Value']]));
     dashboardData.pipeline.monthlyRamp = pipelineRamp.filter(r => r['Month']).map(r => ({
-      Month:r['Month'], 'Advisory Revenue':parseNumeric(r['Advisory Revenue']) || 0, 'Training Revenue':parseNumeric(r['Training Revenue']) || 0,
-      'Total Revenue':parseNumeric(r['Total Revenue']) || 0, Quarter:r['Quarter'], Client:r['Client'], 'Proposal Value (SAR)':parseNumeric(r['Proposal Value (SAR)']), Notes:r['Notes']
+      Month:r['Month'],
+      'Advisory Revenue':parseNumeric(r['Advisory Revenue']) || 0,
+      'Training Revenue':parseNumeric(r['Training Revenue']) || 0,
+      'Mentorship Revenue':parseNumeric(r['Mentorship Program Revenue']) || 0,
+      'Total Revenue':parseNumeric(r['Total Revenue']) || 0,
+      Quarter:r['Quarter'], Client:r['Client'], 'Proposal Value (SAR)':parseNumeric(r['Proposal Value (SAR)']), Notes:r['Notes']
     })).filter(r => r.Month !== 'Year Total');
     dashboardData.pipeline.collections = pipelineCollections.filter(r => r['Description']).map(r => ({
       Description:r['Description'], Q1:parseNumeric(r['Q1']), Q2:parseNumeric(r['Q2']), Q3:parseNumeric(r['Q3']), Q4:parseNumeric(r['Q4']), Year:parseNumeric(r['Year 2026'])
-    }));
+    })).sort((a,b) => {
+      // Display order: Advisory, Training, Mentorship, Total
+      const order = {'Advisory Collections':1,'Training Collections':2,'Mentorship Programs':3,'Total Collections':4};
+      return (order[a.Description]||99) - (order[b.Description]||99);
+    });
 
     const metricRows = salesPerformanceRows.filter(r => r['Metric']);
     dashboardData.sales.kpiRows = salesPerformanceRows.filter(r => r['Metric'] || r['Insight Title'] || r['Insight Detail']);
@@ -2029,7 +2064,8 @@ function initCharts() {
         labels:pipe.map(r => r.Month),
         datasets:[
           {label:'Advisory',data:pipe.map(r => r['Advisory Revenue']),backgroundColor:T.palmDim,borderColor:T.palm,borderWidth:1,borderRadius:3},
-          {label:'Training',data:pipe.map(r => r['Training Revenue']),backgroundColor:T.sandDim,borderColor:T.sand,borderWidth:1,borderRadius:3}
+          {label:'Training',data:pipe.map(r => r['Training Revenue']),backgroundColor:T.sandDim,borderColor:T.sand,borderWidth:1,borderRadius:3},
+          {label:'Mentorship',data:pipe.map(r => r['Mentorship Revenue'] || 0),backgroundColor:T.greenDim,borderColor:T.green,borderWidth:1,borderRadius:3}
         ]
       },
       options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
