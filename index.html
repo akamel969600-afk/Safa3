@@ -327,6 +327,23 @@
 
   /* ═══════════════ TABLE ═══════════════ */
   .table-wrap { overflow-x: auto; }
+  .table-scroll {
+    max-height: 480px; overflow: auto; position: relative;
+    border: 1px solid var(--table-border); border-radius: 6px;
+  }
+  .table-scroll table thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--table-head-bg);
+    box-shadow: inset 0 -2px 0 var(--border);
+    border-bottom: none;
+  }
+  .table-sortable thead th { cursor: pointer; user-select: none; white-space: nowrap; }
+  .table-sortable thead th .sort-arrow {
+    display: inline-block; margin-left: 6px; font-size: 9px; opacity: 0.35;
+  }
+  .table-sortable thead th.sort-asc .sort-arrow,
+  .table-sortable thead th.sort-desc .sort-arrow { opacity: 1; color: var(--palm); }
+  .table-sortable thead th:hover { color: var(--palm); }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
   thead th {
     padding: 10px 12px; text-align: right; font-weight: 700;
@@ -937,9 +954,17 @@
     <!-- ─── OPPORTUNITIES REGISTER ─── -->
     <div class="card anim-in" style="margin-bottom:22px;">
       <div class="section-title">Opportunities Register</div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Client</th><th>Opportunity</th><th>BD Lead</th><th>Submitted</th><th>Stage</th><th>Value (SAR)</th><th>Prob</th></tr></thead>
+      <div class="table-wrap table-scroll">
+        <table id="sales-proposals-table" class="table-sortable">
+          <thead><tr>
+            <th data-sort-key="Client" data-sort-type="string">Client<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="Opportunity" data-sort-type="string">Opportunity<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="BD Lead" data-sort-type="string">BD Lead<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="Submitted" data-sort-type="date">Submitted<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="Stage" data-sort-type="string">Stage<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="Value_SAR" data-sort-type="number">Value (SAR)<span class="sort-arrow">↕</span></th>
+            <th data-sort-key="Probability_Pct" data-sort-type="number">Prob<span class="sort-arrow">↕</span></th>
+          </tr></thead>
           <tbody id="sales-proposals-body">
             <tr><td>Loading…</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
           </tbody>
@@ -1489,26 +1514,86 @@ function getProbabilityBuckets(opportunities) {
   const labels = Object.keys(buckets).map(Number).sort((a,b)=>a-b);
   return { labels: labels.map(v => String(v)), data: labels.map(v => buckets[v]) };
 }
+function renderOpportunitiesRows(opportunities) {
+  const body = document.getElementById('sales-proposals-body');
+  if (!body) return;
+  body.innerHTML = opportunities.map(o => {
+    const cls = rowClassByProbability(o['Probability_Pct']);
+    const stage = o['Stage'] ?? '';
+    const isLost = String(stage).toLowerCase().includes('lost');
+    const isWon  = String(stage).toLowerCase().includes('won');
+    const clientStyle = isLost ? ' style="color:var(--red)!important"' : isWon ? ' style="color:var(--green)!important"' : '';
+    const stageStyle  = ` style="font-weight:700;color:${stageBadgeColor(stage)}"`;
+    return `<tr>
+      <td${clientStyle}>${o['Client'] ?? ''}</td>
+      <td${clientStyle}>${o['Opportunity'] ?? ''}</td>
+      <td>${o['BD Lead'] ?? ''}</td>
+      <td>${o['Submitted'] ?? ''}</td>
+      <td${stageStyle}>${stage}</td>
+      <td>${o['Value_SAR'] ? Number(o['Value_SAR']).toLocaleString() : 'N/A'}</td>
+      <td class="${cls}">${formatPercent(o['Probability_Pct'])}</td>
+    </tr>`;
+  }).join('');
+}
+
+let _oppSortState = { key: null, dir: 1 };
+function attachOpportunitiesSort(opportunities) {
+  const table = document.getElementById('sales-proposals-table');
+  if (!table || table.dataset.sortBound === '1') {
+    // Already bound — just refresh latest dataset reference for re-sorts.
+    table && (table._oppData = opportunities.slice());
+    return;
+  }
+  table._oppData = opportunities.slice();
+  table.dataset.sortBound = '1';
+  table.querySelectorAll('thead th[data-sort-key]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key  = th.dataset.sortKey;
+      const type = th.dataset.sortType || 'string';
+      if (_oppSortState.key === key) {
+        _oppSortState.dir = -_oppSortState.dir;
+      } else {
+        _oppSortState.key = key;
+        _oppSortState.dir = type === 'number' ? -1 : 1; // numbers default desc
+      }
+      const dir = _oppSortState.dir;
+      const data = (table._oppData || []).slice();
+      const cmp = (a, b) => {
+        const va = a[key], vb = b[key];
+        const aNull = va === null || va === undefined || va === '';
+        const bNull = vb === null || vb === undefined || vb === '';
+        if (aNull && bNull) return 0;
+        if (aNull) return 1;   // nulls last
+        if (bNull) return -1;
+        if (type === 'number') return (Number(va) - Number(vb)) * dir;
+        if (type === 'date') {
+          const da = new Date(va).getTime();
+          const db = new Date(vb).getTime();
+          if (isNaN(da) && isNaN(db)) return 0;
+          if (isNaN(da)) return 1;
+          if (isNaN(db)) return -1;
+          return (da - db) * dir;
+        }
+        return String(va).localeCompare(String(vb), undefined, { numeric:true, sensitivity:'base' }) * dir;
+      };
+      data.sort(cmp);
+      renderOpportunitiesRows(data);
+      table.querySelectorAll('thead th').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+      th.classList.add(dir === 1 ? 'sort-asc' : 'sort-desc');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) {
+        table.querySelectorAll('.sort-arrow').forEach(a => a.textContent = '↕');
+        arrow.textContent = dir === 1 ? '▲' : '▼';
+      }
+    });
+  });
+}
+
 function renderSalesTables(opportunities, operations) {
   const body = document.getElementById('sales-proposals-body');
   if (body && opportunities.length) {
-    body.innerHTML = opportunities.map(o => {
-      const cls = rowClassByProbability(o['Probability_Pct']);
-      const stage = o['Stage'] ?? '';
-      const isLost = String(stage).toLowerCase().includes('lost');
-      const isWon = String(stage).toLowerCase().includes('won');
-      const clientStyle = isLost ? ' style="color:var(--red)!important"' : isWon ? ' style="color:var(--green)!important"' : '';
-      const stageStyle = ` style="font-weight:700;color:${stageBadgeColor(stage)}"`;
-      return `<tr>
-        <td${clientStyle}>${o['Client'] ?? ''}</td>
-        <td${clientStyle}>${o['Opportunity'] ?? ''}</td>
-        <td>${o['BD Lead'] ?? ''}</td>
-        <td>${o['Submitted'] ?? ''}</td>
-        <td${stageStyle}>${stage}</td>
-        <td>${o['Value_SAR'] ? Number(o['Value_SAR']).toLocaleString() : 'N/A'}</td>
-        <td class="${cls}">${formatPercent(o['Probability_Pct'])}</td>
-      </tr>`;
-    }).join('');
+    renderOpportunitiesRows(opportunities);
+    attachOpportunitiesSort(opportunities);
   }
   const opsBody = document.getElementById('sales-operations-body');
   if (opsBody && operations.length) {
